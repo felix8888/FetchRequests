@@ -13,8 +13,10 @@ public class PaginatingFetchDefinition<FetchedObject: FetchableObject>: FetchDef
         _ currentResults: [FetchedObject],
         _ completion: @escaping ([FetchedObject]?) -> Void
     ) -> Void
+    public typealias PaginationEndedValidation = () -> Bool
 
     internal let paginationRequest: PaginationRequest
+    public let paginationEnded: PaginationEndedValidation
 
     public init<VoidToken: ObservableToken, DataToken: ObservableToken>(
         request: @escaping Request,
@@ -22,9 +24,11 @@ public class PaginatingFetchDefinition<FetchedObject: FetchableObject>: FetchDef
         objectCreationToken: DataToken,
         creationInclusionCheck: @escaping CreationInclusionCheck = { _ in true },
         associations: [FetchRequestAssociation<FetchedObject>] = [],
-        dataResetTokens: [VoidToken] = []
+        dataResetTokens: [VoidToken] = [],
+        paginationEnded: @escaping PaginationEndedValidation = { false }
     ) where VoidToken.Parameter == Void, DataToken.Parameter == FetchedObject.RawData {
         self.paginationRequest = paginationRequest
+        self.paginationEnded = paginationEnded
         super.init(
             request: request,
             objectCreationToken: objectCreationToken,
